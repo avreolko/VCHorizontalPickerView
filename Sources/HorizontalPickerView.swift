@@ -33,12 +33,14 @@ public final class HorizontalPickerView: UIView {
         self.setup()
     }
 
-    private var titles: [String] = []
+    private var longestTitle = ""
+    private var items: [String] = []
 
     private let widthFormula: (CGFloat) -> CGFloat = { $0 * 1.2 + 20 }
 
-    public func set<T: CustomStringConvertible>(items: [T]) {
-        self.titles = items.map { $0.description }
+    public func set(items: [String]) {
+        self.longestTitle = items.sorted { $0.count > $1.count }.first ?? ""
+        self.items = items
         self.pickerView.reloadAllComponents()
     }
 
@@ -60,36 +62,32 @@ extension HorizontalPickerView: UIPickerViewDataSource, UIPickerViewDelegate {
     }
 
     public func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
-        return self.titles.count
+        return self.items.count
     }
 
     public func pickerView(_ pickerView: UIPickerView, rowHeightForComponent component: Int) -> CGFloat {
 
-        let maxSize = self.titles
-            .map { $0.description }
-            .map { (title) -> CGSize in
-                let label = UILabel()
-                label.text = title
-                return label.intrinsicContentSize
-            }
-            .sorted { $0.width > $1.width }
-            .first
+        let calculateMaxWidth: () -> CGFloat = {
+            let label = UILabel()
+            label.text = self.longestTitle
+            return label.intrinsicContentSize.width
+        }
 
-        return self.itemWidth ?? self.widthFormula(maxSize?.width ?? 30)
+        return self.itemWidth ?? self.widthFormula(calculateMaxWidth())
     }
 
     public func pickerView(_ pickerView: UIPickerView, viewForRow row: Int, forComponent component: Int, reusing view: UIView?) -> UIView {
         let label = UILabel(frame: .zero)
         let angle: CGFloat = 90 * (.pi/180)
         label.transform = CGAffineTransform(rotationAngle: angle)
-        label.text = self.titles[row].description
+        label.text = self.items[row]
         label.textAlignment = .center
         return label
     }
 
     public func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
         self.pickedIndexChangeHandler?(row)
-        self.pickedValueChangeHandler?(self.titles[row])
+        self.pickedValueChangeHandler?(self.items[row])
     }
 }
 
