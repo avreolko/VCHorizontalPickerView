@@ -6,3 +6,6 @@ A basic implementation of the horizontal picker view
 
 ## Installation
 Install with SPM 📦
+
+## License ##
+This project is released under the [MIT license](https://en.wikipedia.org/wiki/MIT_License).
